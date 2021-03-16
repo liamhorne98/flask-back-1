@@ -94,3 +94,37 @@ def get_accounts():
     finally:
         con.close()
         return jsonify(records)
+
+@app.route('/show-admin/', methods=["GET"])
+def show_admin():
+    records = []
+    try:
+            with sqlite3.connect('database.db') as con:
+                con.row_factory = dic_factory
+                cur = con.cursor()
+                cur.execute("SELECT * FROM admin")
+                records = cur.fetchall()
+    except Exception as e:
+            con.rollback()
+            print("There was am error fetching accounts from the database." + str(e))
+    finally:
+            con.close()
+            return jsonify(records)
+
+def admin():
+    msg = None
+    try:
+        with sqlite3.connect('database.db') as con:
+            cur = con.cursor()
+
+            cur.execute("INSERT INTO admin (uname, passw) VALUES ('admin','1234')",
+                        )
+            con.commit()
+            msg = " Aadmin succefully created."
+    except Exception as e:
+        con.rollback()
+        msg = "Error occurred in insert operation: " + str(e)
+    finally:
+        con.close()
+        print(msg)
+admin()
