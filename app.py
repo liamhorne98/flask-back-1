@@ -28,11 +28,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-# @app.route('/')
-# @app.route('/enter-new/')
-# def reg():
-# return render_template('index.html')
-
 @app.route('/add-new/', methods=['POST'])
 def add_new():
     msg = None
@@ -99,6 +94,3 @@ def get_accounts():
     finally:
         con.close()
         return jsonify(records)
-
-# @app.route('/login-admin/', methods=["GET"])
-
