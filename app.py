@@ -15,9 +15,9 @@ def init_sqlite_db():
     print("Successfully open a database")
     connection.execute('CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY AUTOINCREMENT, fname TEXT, uname TEXT, passw Text, email TEXT)')
     print("Successfully created the table")
-    connection.execute
-    ('CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY AUTOINCREMENT,uname TEXT,passw TEXT')
-    print("Successfully created the table")
+    # connection.execute
+    # ('CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY AUTOINCREMENT,uname TEXT,passw TEXT)')
+    # print("Successfully created the table")
     connection.close()
 
 
@@ -42,8 +42,8 @@ def add_new():
             with sqlite3.connect('database.db') as con:
                 cur = con.cursor()
                 cur.execute("INSERT INTO accounts (fname, uname , passq, email) VALUES (?, ?, ?, ?)",(fname,uname,passw, email))
-                cur.execute("INSERT INTO admin (uname, passw) VALUES ('admin','admin')",
-                (uname, passw))
+                # cur.execute("INSERT INTO admin (uname, passw) VALUES ('admin','admin')",
+                # (uname, passw))
                 con.commit()
                 msg = fname + "Successfully created account"
         except Exception as e:
@@ -53,6 +53,24 @@ def add_new():
             con.close()
             return jsonify(msg)
 
+
+def admin():
+    msg = None
+    try:
+        with sqlite3.connect('database.db') as con:
+            cur = con.cursor()
+
+            cur.execute("INSERT INTO admin (uname, passw) VALUES ('admin','1234')",
+                        )
+            con.commit()
+            msg = " Admin succefully created."
+    except Exception as e:
+        con.rollback()
+        msg = "Error occurred in insert operation: " + str(e)
+    finally:
+        con.close()
+        print(msg)
+admin()
 
 @app.route('/login-account/', methods=["GET"])
 def login_account():
@@ -77,6 +95,28 @@ def login_account():
             con.close()
             return jsonify(records)
 
+@app.route('/login-admin/', methods=["GET"])
+def login_admin():
+    records = {}
+    if request.method == "POST":
+        msg = None
+
+        try:
+            post_data = request.get_json()
+            uname = post_data['uname']
+            passw = post_data['passw']
+
+            with sqlite3.connect('database.db') as con:
+                cur = con.cursor()
+                sql = "SELECT * FROM admin WHERE uname = ? and passw = ?"
+                cur.execute(sql,[uname, passw])
+                records = cur.fetchall()
+        except Exception as e:
+            con.rollback()
+            msg = "Error occurred while fetching data from db: " + str(e)
+        finally:
+            con.close()
+            return jsonify(records)
 
 @app.route('/accounts/', methods=["GET"])
 def get_accounts():
@@ -111,20 +151,7 @@ def show_admin():
             con.close()
             return jsonify(records)
 
-def admin():
-    msg = None
-    try:
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
 
-            cur.execute("INSERT INTO admin (uname, passw) VALUES ('admin','1234')",
-                        )
-            con.commit()
-            msg = " Aadmin succefully created."
-    except Exception as e:
-        con.rollback()
-        msg = "Error occurred in insert operation: " + str(e)
-    finally:
-        con.close()
-        print(msg)
-admin()
+
+if __name__=='__main__':
+    app.run(debug=True)
